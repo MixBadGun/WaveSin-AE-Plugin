@@ -124,6 +124,16 @@ ParamsSetup (
 		STR(StrID_Wave_Form_Choices),
 		WAVE_FORM_ID
 	);
+
+	AEFX_CLR_STRUCT(def);
+	// 径向、切向选择
+	PF_ADD_POPUP(
+		STR(StrID_Wave_Direction_Name),
+		3,
+		1,
+		STR(StrID_Wave_Direction_Choices),
+		WAVE_DIRECTION_ID
+	);
 	
 	out_data->num_params = WAVESIN_NUM_PARAMS;
 
@@ -140,6 +150,7 @@ void CalcWavePixel(
 	PF_FpLong angleOffset,
 	bool reverseDirection,
 	A_long waveForm,
+	A_long waveDirection,	// 波形扭曲方向
 	PF_FpLong downSampleScale,
 	PF_Fixed *new_xFi,
 	PF_Fixed *new_yFi
@@ -152,17 +163,35 @@ void CalcWavePixel(
 	PF_FpLong length = sqrt(deltaX * deltaX + deltaY * deltaY);
 	// 根据偏移值计算角度
 	PF_FpLong angle = atan2(deltaY, deltaX) - fmod(angleOffset * (PI / 180.0), 2 * PI);
-	while(angle < 0){
+
+	// atan2输出值域为[-pi, pi]
+	if (angle < 0) {
 		angle += 2 * PI;
 	}
-	// 根据角度计算波动程度
-	PF_FpLong waveOffset = 0.5 * (GetWaveFuncValue(waveForm, angle * waveWidth) + 1) * gain;
-	if(reverseDirection){
-		waveOffset = -waveOffset;
+
+	if (waveDirection == 1) {		// 径向扭曲
+		// 根据角度计算波动程度
+		// 添加了相位偏移，确保边界连续
+		PF_FpLong waveOffset = 0.5 * (GetWaveFuncValue(waveForm, (angle * waveWidth) + (PI / 2 - PI * waveWidth)) + 1) * gain;
+		if (reverseDirection) {
+			waveOffset = -waveOffset;
+		}
+		// 新的像素位置，就是沿着原点到锚点的方向，移动波动程度后的坐标
+		*new_xFi = FLOAT2FIX(FIX_2_FLOAT(oriX) + waveOffset * (deltaX / length) * downSampleScale);
+		*new_yFi = FLOAT2FIX(FIX_2_FLOAT(oriY) + waveOffset * (deltaY / length) * downSampleScale);
 	}
-	// 新的像素位置，就是沿着原点到锚点的方向，移动波动程度后的坐标
-	*new_xFi = FLOAT2FIX(FIX_2_FLOAT(oriX) + waveOffset * (deltaX / length) * downSampleScale);
-	*new_yFi = FLOAT2FIX(FIX_2_FLOAT(oriY) + waveOffset * (deltaY / length) * downSampleScale);
+	else {	// 旋转扭曲
+		// 极坐标角度添加偏移
+		PF_FpLong angleOffset = GetWaveFuncValue(waveForm, (length * waveWidth / downSampleScale / 200)) * gain / 2000;
+		if (reverseDirection) {
+			angleOffset = -angleOffset;
+		}
+		// 新的像素位置，从极坐标还原回直角坐标加上锚点坐标偏移
+		*new_xFi = FLOAT2FIX(FIX_2_FLOAT(anchorX) + length * cos(angle + angleOffset));
+		*new_yFi = FLOAT2FIX(FIX_2_FLOAT(anchorY) + length * sin(angle + angleOffset));
+	}
+
+
 }
 
 static PF_Err
@@ -196,6 +225,7 @@ MySimpleGainFunc16 (
 					giP->offset,
 					giP->reverseDirection,
 					giP->waveForm,
+					giP->waveDirection,
 					downSampleScale,
 					&new_xFi,
 					&new_yFi);
@@ -241,6 +271,7 @@ MySimpleGainFunc8 (
 					giP->offset,
 					giP->reverseDirection,
 					giP->waveForm,
+					giP->waveDirection,
 					downSampleScale,
 					&new_xFi,
 					&new_yFi);
@@ -278,6 +309,7 @@ Render (
 	giP.offset = FIX_2_FLOAT(params[WAVESIN_OFFSET]->u.ad.value);
 	giP.reverseDirection = params[WAVESIN_REVERSE_DIRECTION]->u.bd.value;
 	giP.waveForm = params[WAVESIN_WAVE_FORM]->u.pd.value;
+	giP.waveDirection = params[WAVESIN_WAVE_DIRECTION]->u.pd.value;
 
 	PF_Rect	src_rectR =	{0,0,0,0};
 	PF_Rect	dst_rectR =	{0,0,0,0};

@@ -61,6 +61,7 @@ enum {
 	WAVESIN_OFFSET,
 	WAVESIN_REVERSE_DIRECTION,
 	WAVESIN_WAVE_FORM,
+	WAVESIN_WAVE_DIRECTION,
 	WAVESIN_NUM_PARAMS
 };
 
@@ -70,7 +71,8 @@ enum {
 	WAVE_WIDTH_ID,
 	OFFSET_ID,
 	REVERSE_DIRECTION_ID,
-	WAVE_FORM_ID
+	WAVE_FORM_ID,
+	WAVE_DIRECTION_ID,
 };
 
 typedef struct WaveInfo{
@@ -82,6 +84,7 @@ typedef struct WaveInfo{
 	PF_FpLong	offset;
 	bool		reverseDirection;
 	A_long		waveForm;
+	A_long		waveDirection;
 	PF_SampPB	samp_pb;
 } WaveInfo, *WaveInfoP, **WaveInfoH;
 
