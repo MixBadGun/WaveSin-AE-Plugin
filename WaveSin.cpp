@@ -168,11 +168,15 @@ void CalcWavePixel(
 	if (angle < 0) {
 		angle += 2 * PI;
 	}
+	PF_FpLong calc_angle = (angle * waveWidth) + (PI / 2 - PI * waveWidth); // 应用波形宽度缩放
+	if(calc_angle < 0) {
+		calc_angle += 2 * PI;
+	}
 
 	if (waveDirection == 1) {		// 径向扭曲
 		// 根据角度计算波动程度
 		// 添加了相位偏移，确保边界连续
-		PF_FpLong waveOffset = 0.5 * (GetWaveFuncValue(waveForm, (angle * waveWidth) + (PI / 2 - PI * waveWidth)) + 1) * gain;
+		PF_FpLong waveOffset = 0.5 * (GetWaveFuncValue(waveForm, calc_angle) + 1) * gain;
 		if (reverseDirection) {
 			waveOffset = -waveOffset;
 		}
