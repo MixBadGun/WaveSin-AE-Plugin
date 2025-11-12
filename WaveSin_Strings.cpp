@@ -18,6 +18,8 @@ TableString		en_strs[StrID_NUMTYPES] = {
 	StrID_Reverse_Direction_Param_Name,"Reverse Direction",
 	StrID_Wave_Form_Param_Name,		"Wave Form",
 	StrID_Wave_Form_Choices,		"Sine|Square|Triangle",
+	StrID_Wave_Direction_Name,		"Wave Direction",
+	StrID_Wave_Direction_Choices,	"Radial|Spin",
 };
 
 TableString		zh_strs[StrID_NUMTYPES] = {
@@ -31,6 +33,8 @@ TableString		zh_strs[StrID_NUMTYPES] = {
 	StrID_Reverse_Direction_Param_Name,"反转方向",
 	StrID_Wave_Form_Param_Name,		"波形函数",
 	StrID_Wave_Form_Choices,		"正弦波|方波|锯齿波",
+	StrID_Wave_Direction_Name,		"波形方向",
+	StrID_Wave_Direction_Choices,	"径向|旋转",
 };
 
 

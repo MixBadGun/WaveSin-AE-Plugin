@@ -11,7 +11,10 @@ typedef enum {
 	StrID_Reverse_Direction_Param_Name,
 	StrID_Wave_Form_Param_Name,
 	StrID_Wave_Form_Choices,
-	StrID_NUMTYPES
+	StrID_Wave_Direction_Name,
+	StrID_Wave_Direction_Choices,
+
+	StrID_NUMTYPES,
 } StrIDType;
 
 char	*GetStringPtr(int strNum, A_char* lang_tagZ);
