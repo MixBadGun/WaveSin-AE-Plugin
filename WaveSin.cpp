@@ -10,6 +10,9 @@ static A_char lang_tagZ[PF_APP_LANG_TAG_SIZE - 1];
 
 #define	STR(_foo)	GetStringPtr(_foo, lang_tagZ)
 
+#define max(a,b) (((a)>(b))?(a):(b))
+#define min(a,b) (((a)<(b))?(a):(b))
+
 static PF_Err 
 About (	
 	PF_InData		*in_data,

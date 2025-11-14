@@ -1,7 +1,7 @@
 #include "WaveSin.h"
+#include "WaveForm.h"
 
 #define PI 3.14159265358979323846
-
 
 float sharpFunc(float angle){
 	// 一个周期函数，从 0 开始，周期是 2π, 在每个周期内，前半段从-1上升到1，后半段从1下降到-1
