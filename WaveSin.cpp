@@ -3,7 +3,7 @@ WaveSin.cpp
 */
 
 #include "WaveSin.h"
-#include "WaveForm.cpp"
+#include "WaveForm.h"
 #include <Param_Utils.h>
 
 static A_char lang_tagZ[PF_APP_LANG_TAG_SIZE - 1];
@@ -13,7 +13,9 @@ static A_char lang_tagZ[PF_APP_LANG_TAG_SIZE - 1];
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
 
-static PF_Err 
+#define PI 3.14159265358979323846
+
+static PF_Err
 About (	
 	PF_InData		*in_data,
 	PF_OutData		*out_data,
