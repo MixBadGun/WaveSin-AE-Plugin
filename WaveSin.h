@@ -41,11 +41,17 @@ typedef short int			int16;
 /* Versioning information */
 
 #define	MAJOR_VERSION	1
-#define	MINOR_VERSION	1
+#define	MINOR_VERSION	2
 #define	BUG_VERSION		0
-#define	STAGE_VERSION	PF_Stage_DEVELOP
+#define	STAGE_VERSION	PF_Stage_RELEASE
 #define	BUILD_VERSION	1
 
+/* RESOURCE_VERSION =
+MAJOR_VERSION * 524288 +
+MINOR_VERSION * 32768 +
+BUG_VERSION * 2048
+STAGE_VERSION * 512
+BUILD_VERSION */
 
 /* Parameter defaults */
 
@@ -60,6 +66,7 @@ enum {
 	WAVESIN_WAVE_WIDTH,
 	WAVESIN_OFFSET,
 	WAVESIN_REVERSE_DIRECTION,
+	WAVESIN_LENGTH_CONSTRAINT,
 	WAVESIN_WAVE_FORM,
 	WAVESIN_WAVE_DIRECTION,
 	WAVESIN_NUM_PARAMS
@@ -71,6 +78,7 @@ enum {
 	WAVE_WIDTH_ID,
 	OFFSET_ID,
 	REVERSE_DIRECTION_ID,
+	LENGTH_CONSTRAINT_ID,
 	WAVE_FORM_ID,
 	WAVE_DIRECTION_ID,
 };
@@ -83,6 +91,7 @@ typedef struct WaveInfo{
 	PF_FpLong 	gain;
 	PF_FpLong	offset;
 	bool		reverseDirection;
+	bool		lengthConstraint;
 	A_long		waveForm;
 	A_long		waveDirection;
 	PF_SampPB	samp_pb;

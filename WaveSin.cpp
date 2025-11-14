@@ -116,6 +116,14 @@ ParamsSetup (
 					REVERSE_DIRECTION_ID);
 
 	AEFX_CLR_STRUCT(def);
+	// 长度约束
+	PF_ADD_CHECKBOXX(	
+					STR(StrID_Length_Constraint_Param_Name),
+					TRUE,
+					0,
+					LENGTH_CONSTRAINT_ID);
+
+	AEFX_CLR_STRUCT(def);
 	// 函数形选择
 	PF_ADD_POPUP(
 		STR(StrID_Wave_Form_Param_Name),
@@ -149,9 +157,11 @@ void CalcWavePixel(
 	PF_FpLong waveWidth,
 	PF_FpLong angleOffset,
 	bool reverseDirection,
+	bool lengthConstraint,
 	A_long waveForm,
 	A_long waveDirection,	// 波形扭曲方向
-	PF_FpLong downSampleScale,
+	PF_FpLong downSampleScaleX,
+	PF_FpLong downSampleScaleY,
 	PF_Fixed *new_xFi,
 	PF_Fixed *new_yFi
 )
@@ -169,7 +179,7 @@ void CalcWavePixel(
 		angle += 2 * PI;
 	}
 	PF_FpLong calc_angle = (angle * waveWidth) + (PI / 2 - PI * waveWidth); // 应用波形宽度缩放
-	if(calc_angle < 0) {
+	while(calc_angle < 0) {
 		calc_angle += 2 * PI;
 	}
 
@@ -181,12 +191,18 @@ void CalcWavePixel(
 			waveOffset = -waveOffset;
 		}
 		// 新的像素位置，就是沿着原点到锚点的方向，移动波动程度后的坐标
-		*new_xFi = FLOAT2FIX(FIX_2_FLOAT(oriX) + waveOffset * (deltaX / length) * downSampleScale);
-		*new_yFi = FLOAT2FIX(FIX_2_FLOAT(oriY) + waveOffset * (deltaY / length) * downSampleScale);
+		PF_FpLong denX = 2000;
+		PF_FpLong denY = 2000;
+		if(lengthConstraint){
+			denX = length / downSampleScaleX;
+			denY = length / downSampleScaleY;
+		}
+		*new_xFi = FLOAT2FIX(FIX_2_FLOAT(oriX) + waveOffset * (deltaX / denX));
+		*new_yFi = FLOAT2FIX(FIX_2_FLOAT(oriY) + waveOffset * (deltaY / denY));
 	}
 	else {	// 旋转扭曲
 		// 极坐标角度添加偏移
-		PF_FpLong angleOffset = GetWaveFuncValue(waveForm, (length * waveWidth / downSampleScale / 200)) * gain / 2000;
+		PF_FpLong angleOffset = GetWaveFuncValue(waveForm, (length * waveWidth / downSampleScaleX / 200)) * gain / 2000;
 		if (reverseDirection) {
 			angleOffset = -angleOffset;
 		}
@@ -218,7 +234,8 @@ MySimpleGainFunc16 (
 	PF_FpLong offset_anchorY = giP->anchorY + (giP->in_data->output_origin_y << 16);
 
 	// 下采样比例
-	PF_FpLong downSampleScale = (static_cast<PF_FpLong>(giP->in_data->downsample_x.num) / giP->in_data->downsample_x.den);
+	PF_FpLong downSampleScaleX = (static_cast<PF_FpLong>(giP->in_data->downsample_x.num) / giP->in_data->downsample_x.den);
+	PF_FpLong downSampleScaleY = (static_cast<PF_FpLong>(giP->in_data->downsample_y.num) / giP->in_data->downsample_y.den);
 
 	CalcWavePixel(	INT2FIX(xL),
 					INT2FIX(yL),
@@ -228,9 +245,11 @@ MySimpleGainFunc16 (
 					giP->waveWidth,
 					giP->offset,
 					giP->reverseDirection,
+					giP->lengthConstraint,
 					giP->waveForm,
 					giP->waveDirection,
-					downSampleScale,
+					downSampleScaleX,
+					downSampleScaleY,
 					&new_xFi,
 					&new_yFi);
 	new_xFi -= giP->in_data->output_origin_x << 16;
@@ -264,7 +283,8 @@ MySimpleGainFunc8 (
 	PF_FpLong offset_anchorY = giP->anchorY + (giP->in_data->output_origin_y << 16);
 
 	// 下采样比例
-	PF_FpLong downSampleScale = (static_cast<PF_FpLong>(giP->in_data->downsample_x.num) / giP->in_data->downsample_x.den);
+	PF_FpLong downSampleScaleX = (static_cast<PF_FpLong>(giP->in_data->downsample_x.num) / giP->in_data->downsample_x.den);
+	PF_FpLong downSampleScaleY = (static_cast<PF_FpLong>(giP->in_data->downsample_y.num) / giP->in_data->downsample_y.den);
 
 	CalcWavePixel(	INT2FIX(xL),
 					INT2FIX(yL),
@@ -274,9 +294,11 @@ MySimpleGainFunc8 (
 					giP->waveWidth,
 					giP->offset,
 					giP->reverseDirection,
+					giP->lengthConstraint,
 					giP->waveForm,
 					giP->waveDirection,
-					downSampleScale,
+					downSampleScaleX,
+					downSampleScaleY,
 					&new_xFi,
 					&new_yFi);
 	new_xFi -= giP->in_data->output_origin_x << 16;
@@ -312,12 +334,13 @@ Render (
 	giP.waveWidth = params[WAVESIN_WAVE_WIDTH]->u.fs_d.value;
 	giP.offset = FIX_2_FLOAT(params[WAVESIN_OFFSET]->u.ad.value);
 	giP.reverseDirection = params[WAVESIN_REVERSE_DIRECTION]->u.bd.value;
+	giP.lengthConstraint = params[WAVESIN_LENGTH_CONSTRAINT]->u.bd.value;
 	giP.waveForm = params[WAVESIN_WAVE_FORM]->u.pd.value;
 	giP.waveDirection = params[WAVESIN_WAVE_DIRECTION]->u.pd.value;
 
 	PF_Rect	src_rectR =	{0,0,0,0};
 	PF_Rect	dst_rectR =	{0,0,0,0};
-	
+
 	if (in_data->appl_id != 'PrMr'){
 	// 将输入复制到画面中央
 		PF_LayerDef *input_layer = &params[WAVESIN_INPUT]->u.ld;
@@ -386,6 +409,25 @@ Render (
 												output));	
 	}
 
+	// 给画面叠加蓝色，测试观察用
+	// PF_Rect test_rect = {0, 0, output->width, output->height};
+	// PF_Pixel color = {255U,0U,0U,125U};
+	// PF_EffectWorld tmp_world;
+	// PF_NEW_WORLD(	output->width,
+	// 				output->height,
+	// 				1,
+	// 				&tmp_world);
+	// ERR(suites.FillMatteSuite2()->fill(	in_data->effect_ref,
+	// 								&color,
+	// 								&test_rect,					
+	// 								&tmp_world));
+	// PF_Fixed ratio = FLOAT2FIX(0.5);
+	// ERR(in_data->utils->blend(	in_data->effect_ref,
+	// 							&tmp_world,
+	// 							output,
+	// 							ratio,
+	// 							output));
+
 	return err;
 }
 
@@ -401,13 +443,63 @@ FrameSetup (
 	PF_Err	err = PF_Err_NONE;
 
 	if(!params[WAVESIN_REVERSE_DIRECTION]->u.bd.value){
-		return err;
+		// 如果是旋转，依然需要扩展边缘
+		if(params[WAVESIN_WAVE_DIRECTION]->u.pd.value == 1){
+			return err;
+		}
 	}
 
-	PF_FpLong offsetX = params[WAVESIN_GAIN]->u.fs_d.value;	
-	PF_FpLong offsetY = params[WAVESIN_GAIN]->u.fs_d.value;
+	// 下采样比例
+	PF_FpLong downSampleScaleX = (static_cast<PF_FpLong>(in_data->downsample_x.num) / in_data->downsample_x.den);
+	PF_FpLong downSampleScaleY = (static_cast<PF_FpLong>(in_data->downsample_y.num) / in_data->downsample_y.den);
+
+	PF_LayerDef *input_layer = &params[WAVESIN_INPUT]->u.ld;
+
+	PF_FpLong offsetX, offsetY = 0;
+	if(params[WAVESIN_WAVE_DIRECTION]->u.pd.value == 1){	// 径向扭曲
+		if(params[WAVESIN_LENGTH_CONSTRAINT]->u.bd.value){
+			// 长度约束
+			offsetX = params[WAVESIN_GAIN]->u.fs_d.value * downSampleScaleX;
+			offsetY = params[WAVESIN_GAIN]->u.fs_d.value * downSampleScaleY;
+		 } else {
+			// 非长度约束
+			// 取四个点到锚点的最大 deltaX 和 deltaY 作为扩展距离
+			PF_FpLong anchorX = FIX_2_FLOAT(params[WAVESIN_ANCHOR]->u.td.x_value);
+			PF_FpLong anchorY = FIX_2_FLOAT(params[WAVESIN_ANCHOR]->u.td.y_value);
+			PF_FpLong deltaX = max(abs(anchorX), abs(input_layer->width - anchorX));
+			PF_FpLong deltaY = max(abs(anchorY), abs(input_layer->height - anchorY));
+			// 指数增长
+			PF_FpLong mi = 1.2;
+			if(params[WAVESIN_GAIN]->u.fs_d.value / 1000 > 1){
+				mi = 3;
+			}
+			offsetX = deltaX * pow((pow(2, params[WAVESIN_GAIN]->u.fs_d.value / 1000) - 1), mi);
+			offsetY = deltaY * pow((pow(2, params[WAVESIN_GAIN]->u.fs_d.value / 1000) - 1), mi);
+		 }
+	} else {	
+		// 旋转扭曲相当于将矩形扩展为方形，取四个点到锚点的最大距离作为扩展半径，以锚点为中心画出正方形区域
+		PF_FpLong anchorX = FIX_2_FLOAT(params[WAVESIN_ANCHOR]->u.td.x_value);
+		PF_FpLong anchorY = FIX_2_FLOAT(params[WAVESIN_ANCHOR]->u.td.y_value);
+		PF_FpLong distTL = sqrt(pow(anchorX, 2) + pow(anchorY, 2));
+		PF_FpLong distTR = sqrt(pow(input_layer->width - anchorX, 2) + pow(anchorY, 2));
+		PF_FpLong distBL = sqrt(pow(anchorX, 2) + pow(input_layer->height - anchorY, 2));
+		PF_FpLong distBR = sqrt(pow(input_layer->width - anchorX, 2) + pow(input_layer->height - anchorY, 2));
+		PF_FpLong maxDist = max(max(distTL, distTR), max(distBL, distBR));
+		// 获取原图层的中心点
+		PF_FpLong centerX = input_layer->width / 2;
+		PF_FpLong centerY = input_layer->height / 2;
+		// 计算以锚点为中心的正方形坐标最值，用于扩展画布
+		PF_FpLong maxX = max(abs(anchorX - maxDist - centerX),abs(anchorX + maxDist - centerX));
+		PF_FpLong maxY = max(abs(anchorY - maxDist - centerY),abs(anchorY + maxDist - centerY));
+		if(maxX > input_layer->width / 2){
+			offsetX = maxX - input_layer->width / 2;
+		}
+		if(maxY > input_layer->height / 2){
+			offsetY = maxY - input_layer->height / 2;
+		}
+	}
 	
-    PF_LayerDef *input_layer = &params[WAVESIN_INPUT]->u.ld;
+    
     out_data->width = input_layer->width + static_cast<A_long>(offsetX) * 2;
     out_data->height = input_layer->height + static_cast<A_long>(offsetY) * 2;
 

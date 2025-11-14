@@ -9,6 +9,7 @@ typedef enum {
 	StrID_Wave_Width_Param_Name,
 	StrID_Offset_Param_Name,
 	StrID_Reverse_Direction_Param_Name,
+	StrID_Length_Constraint_Param_Name,
 	StrID_Wave_Form_Param_Name,
 	StrID_Wave_Form_Choices,
 	StrID_Wave_Direction_Name,
