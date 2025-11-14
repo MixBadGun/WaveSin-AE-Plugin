@@ -84,9 +84,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C4E618CB095A3CE80012CA3F /* Skeleton */ = {
+		C4E618CB095A3CE80012CA3F /* WaveSin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C4E618CE095A3CE90012CA3F /* Build configuration list for PBXNativeTarget "Skeleton" */;
+			buildConfigurationList = C4E618CE095A3CE90012CA3F /* Build configuration list for PBXNativeTarget "WaveSin" */;
 			buildPhases = (
 				C4E618C8095A3CE80012CA3F /* Resources */,
 				C4E618C9095A3CE80012CA3F /* Sources */,
@@ -97,7 +97,7 @@
 			);
 			dependencies = (
 			);
-			name = Skeleton;
+			name = WaveSin;
 			productName = Skeleton.plugin;
 			productReference = C4E618CC095A3CE80012CA3F /* Skeleton.plugin */;
 			productType = "com.apple.product-type.bundle";
@@ -123,7 +123,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C4E618CB095A3CE80012CA3F /* Skeleton */,
+				C4E618CB095A3CE80012CA3F /* WaveSin */,
 			);
 		};
 /* End PBXProject section */
@@ -208,7 +208,7 @@
 				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = "Skeleton.plugin-Info.plist";
 				INSTALL_PATH = "$(HOME)/Library/Bundles";
-				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.AfterEffects.Skeleton;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.AfterEffects.WaveSin;
 				PRODUCT_NAME = Skeleton;
 				SDKROOT = macosx;
 				ZERO_LINK = NO;
@@ -226,7 +226,7 @@
 			defaultConfigurationIsVisible = 1;
 			defaultConfigurationName = Debug;
 		};
-		C4E618CE095A3CE90012CA3F /* Build configuration list for PBXNativeTarget "Skeleton" */ = {
+		C4E618CE095A3CE90012CA3F /* Build configuration list for PBXNativeTarget "WaveSin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C4E618CF095A3CE90012CA3F /* Debug */,
